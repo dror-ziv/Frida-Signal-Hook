@@ -7,7 +7,8 @@ To discover the PID, name, and identifier of the apk, run the following command:
 ```frida-ps -Uai```
 The output should look like this:
 ```PID Name Identifier
-3460 Signal org.thoughtcrime.securesms```
+3460 Signal org.thoughtcrime.securesms
+```
 
 To find all functions that contain "open," run the following command:
 ```frida-trace -U -i "open" signal```
