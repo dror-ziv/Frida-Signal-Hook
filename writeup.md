@@ -4,34 +4,34 @@
 The first challenge was to find the number of functions and classes that contain the sequence "open" in them using frida-trace.
 
 To discover the PID, name, and identifier of the apk, run the following command:
-```console
+```shell 
 frida-ps -Uai
 ```
 The output should look like this:
-```console
+```shell 
 PID Name Identifier
 3460 Signal org.thoughtcrime.securesms
 ```
 
 To find all functions that contain "open," run the following command:
-```console
+```shell 
 frida-trace -U -i "open" signal
 ```
 The output should look like this:
-```console
+```shell 
 Started tracing 382 functions. Press Ctrl+C to stop.
 ```
 This indicates that there are 382 functions that contain the word "open."
 
 To trim down the list of functions, the `-x` flag can be used to exclude functions that are called regardless of sending or receiving new messages. The full command should look like this:
 
-```console
+```shell 
 frida-trace -U -i "open" signal -x "openssl_get_fork_id" -x "ubidi_open_66" -x "ubidi_open_android" -x "EVP_AEAD_CTX_open" -x "utext_openUChars_66" -x "utext_openUChars_android" -x "__open_2" -x "fdopen" -x "utext_openConstUnicodeString_66" -x "ures_openDirect_66" -x "ures_openDirect_android" -x "open" -x "opendir" -x "ucnv_open_66" -x "ucnv_open_android"
 ```
 This will result in two relevant functions: `sqlite3_blob_open` and `sqlite3_blob_reopen`. These functions are called from `libsqlcipher.so` and are assumed to be called to write to the database every time a new message is received or sent.
 
 To determine the call stack to these functions, use the following JavaScript code:
-```console
+```shell 
 Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new())
 ```
 This will result in a list of call-stacks. After searching through them, the following three functions were found to handle incoming text messages:
