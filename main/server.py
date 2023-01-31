@@ -32,7 +32,6 @@ def add_to_db(outgoingFlag, timestamp, message_str):
 
 def on_message(message, data):
     message = message['payload']
-
     add_to_db(message['outgoingFlag'], message['timestamp'], message['message_str'])
     print(message)
 
