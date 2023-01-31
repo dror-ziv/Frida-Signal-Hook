@@ -90,8 +90,130 @@ var MessageSender = Java.use("org.thoughtcrime.securesms.sms.MessageSender");
         return result;
         };
 ```
-With these hooks in place, incoming and outgoing messages will be captured, formatted as JSON, and sent to the Python server for further processing.
+With these hooks in place, incoming and outgoing messages will be captured.
 
+
+## Stage 3: Implementing the Hooks, send and SQL
+Now that we have located the relevant functions for incoming and outgoing messages, it is time to implement the hooks using Frida and JavaScript syntax. The hooks will collect the information needed and send it to a Python server for processing.
+```javascript
+Java.perform(function(){
+
+    // hooking outgoing messages
+    var MessageSender = Java.use("org.thoughtcrime.securesms.sms.MessageSender");
+     MessageSender.send.implementation = function(context, message, threadId, sendType, metricId, insertListener) {
+        //before execution
+        const json_message = {};
+        var message_str = message.getBody();
+        var outgoingFlag = true;
+        var timestamp = Date.now();
+
+        json_message.outgoingFlag = outgoingFlag;
+        json_message.timestamp = timestamp;
+        json_message.message_str = message_str;
+
+        send(json_message)
+
+        // Call the original handleTextMessage function
+        var result = this.send.apply(this, arguments);
+
+        // after execution
+
+        return result;
+        };
+
+    // hooking incoming messages
+    var MessageContentProcessor = Java.use("org.thoughtcrime.securesms.messages.MessageContentProcessor");
+     MessageContentProcessor.handleTextMessage.implementation = function(content, message, smsMessageId, groupId, senderRecipient, threadRecipient, receivedTime) {
+        //before execution
+        const json_message = {};
+        var message_str = message.getBody().get().toString();
+        var outgoingFlag = false;
+        var timestamp = receivedTime;
+
+        json_message.outgoingFlag = outgoingFlag;
+        json_message.timestamp = timestamp;
+        json_message.message_str = message_str;
+
+        send(json_message)
+
+        // Call the original handleTextMessage function
+        var result = this.handleTextMessage.apply(this, arguments);
+
+        // after execution
+
+        return result;
+        };
+
+
+    });
+```
+
+Next, we'll set up a SQL database on the server and implement the necessary CRUD operations to handle the incoming data. Since the program is multi-threaded, and we don't expect a high amount of traffic, we can create a new connection to the database every time we need to operate on it.
+
+```python
+import frida
+import sqlite3
+
+DB_PATH = "messages.db"
+JS_PAYLOAD_PATH = "signal_payload.js"
+
+
+
+def db_setup():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    listOfTables = cur.execute(
+        """SELECT name FROM sqlite_master WHERE type='table'
+        AND name='messages'; """).fetchall()
+    if not listOfTables:
+        conn.execute('''CREATE TABLE messages 
+               (id INT AUTO_INCREMENT PRIMARY KEY, 
+               outgoingFlag           BOOL    NOT NULL, 
+               timestamp            timestamp, 
+               message_str        TEXT    NOT NULL);''')
+
+    conn.close()
+
+def add_to_db(outgoingFlag, timestamp, message_str):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("INSERT INTO messages (outgoingFlag,timestamp,message_str) \
+    VALUES (?, ?, ?)", (outgoingFlag, timestamp, message_str));
+    conn.commit()
+    conn.close()
+
+
+def on_message(message, data):
+    message = message['payload']
+
+    add_to_db(message['outgoingFlag'], message['timestamp'], message['message_str'])
+    print(message)
+
+
+
+
+def execute_frida():
+    session = frida.get_device_manager().enumerate_devices()[-1].attach("signal")
+
+    with open(JS_PAYLOAD_PATH, 'r') as f:
+        script_str = f.read()
+
+    script = session.create_script(script_str)
+
+    script.on("message", on_message)
+    script.load()
+    input()
+
+
+def main():
+    db_setup()
+    execute_frida()
+
+
+if __name__ == "__main__":
+    main()
+```
+And that's it! You can now run your application and start collecting incoming and outgoing message data. To see the trade-offs, improvements, and known limitations of this project, you can check out the accompanying readme file.
 
 
 
