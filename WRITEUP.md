@@ -57,7 +57,7 @@ From the call stack, three interesting functions were found:
 After searching the Signal source code, it was found that the `handleTextMessage` function handled incoming text messages and received the decrypted message and received time.
 
 
-For outgoing messages,the same proccess was repeted and the `send` method from `sms.MessageSender` was chosen. The only exception is that the `send` method does not get a timestamp with it. However, since it is called when a message is sent (locally), the current time can be obtained using `Date.now`.
+For outgoing messages,the same proccess was repeated and the `send` method from `sms.MessageSender` was chosen. The only exception is that the `send` method does not get a timestamp with it. However, since it is called when a message is sent (locally), the current time can be obtained using `Date.now`.
 
 ## Stage 2
 
