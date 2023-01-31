@@ -216,6 +216,8 @@ if __name__ == "__main__":
 ```
 And that's it! You can now run your application and start collecting incoming and outgoing message data. To see the trade-offs, improvements, and known limitations of this project, you can check out the accompanying readme file.
 
+## Conclusion
+In this project, we developed a Frida-based tool to capture incoming and outgoing text messages in the Signal app, and save them to a SQL database. By using frida-trace, we discovered the functions related to message storage, and hooked into relevant functions using Frida's JavaScript API. The captured messages were then sent to a Python server for parsing and storing in a SQL database.
 
-
+This project serves as a proof-of-concept for demonstrating the power of Frida in dynamic analysis of mobile applications. To see the trade-offs, improvements, and known flaws of the project, you are welcome to check the accompanying README file.
 
