@@ -34,14 +34,15 @@ To narrow down the list of functions, the -x flag was used to remove functions t
 ```shell 
 frida-trace -U -i "open" signal -x "openssl_get_fork_id" -x "ubidi_open_66" -x "ubidi_open_android" -x "EVP_AEAD_CTX_open" -x "utext_openUChars_66" -x "utext_openUChars_android" -x "__open_2" -x "fdopen" -x "utext_openConstUnicodeString_66" -x "ures_openDirect_66" -x "ures_openDirect_android" -x "open" -x "opendir" -x "ucnv_open_66" -x "ucnv_open_android"
 ```
+
 This resulted in two relevant functions:
--`sqlite3_blob_open`
--`sqlite3_blob_reopen`
+
+- `sqlite3_blob_open`
+- `sqlite3_blob_reopen`
 
 It was assumed that these functions were called to write to the database every time a new message was received or sent.
-after trying to hook to those functions directrly for a while and decyphering from the args they get (js + memory pointers = a bad time)
+after trying to hook to those functions directrly for a while and decyphering from the args they get (js + memory pointers = a bad time)\n
 i decided To further investigate, and look in the call stack to these functions was found using the following JavaScript code:
-
 
 ```shell 
 Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new())
@@ -56,7 +57,7 @@ From the call stack, three interesting functions were found:
 After searching the Signal source code, it was found that the `handleTextMessage` function handled incoming text messages and received the decrypted message and received time.
 
 
-For outgoing messages, the `send` method from `sms.MessageSender` was chosen. The only exception is that the `send` method does not get a timestamp with it. However, since it is called when a message is sent (locally), the current time can be obtained using `Date.now`.
+For outgoing messages,the same proccess was repeted and the `send` method from `sms.MessageSender` was chosen. The only exception is that the `send` method does not get a timestamp with it. However, since it is called when a message is sent (locally), the current time can be obtained using `Date.now`.
 
 ## Stage 2
 
