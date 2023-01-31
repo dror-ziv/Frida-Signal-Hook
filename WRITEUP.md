@@ -42,7 +42,7 @@ This resulted in two relevant functions:
 
 It was assumed that these functions were called to write to the database every time a new message was received or sent.
 after trying to hook to those functions directrly for a while and decyphering from the args they get (js + memory pointers = a bad time)\n
-i decided To further investigate, and look in the call stack to these functions was found using the following JavaScript code:
+i decided To further investigate, and look in the call stack to these functions - using the following JavaScript code:
 
 ```shell 
 Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new())
