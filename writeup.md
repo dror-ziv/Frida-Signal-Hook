@@ -2,7 +2,7 @@
 This project is aimed at capturing inbound and outbound messages from the Signal app and saving them to a SQL database.
 
 
-##Stage 1: Tracing Functions with Frida
+## Stage 1: Tracing Functions with Frida
 
 The first step was to discover the functions within the Signal app that contain the sequence "open". This was done using the ```frida-trace``` tool. To do this, the process identifier (PID) and name of the Signal app was found by running the following command:
 
