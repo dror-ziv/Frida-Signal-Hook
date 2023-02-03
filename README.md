@@ -1,7 +1,7 @@
 # Frida-Signal-Hook
 Frida-Signal-Hook: Capturing In-Out Messages and Saving to SQL Database.
 
-this project was done as an assignment. For a complete write-up of the development process, please refer to the [WRITE.md file](https://github.com/dror-ziv/Frida-Signal-Hook/blob/main/WRITEUP.md).
+this project was done as an assignment. For a complete write-up of the development process, please refer to the [WRITEUP.md file](https://github.com/dror-ziv/Frida-Signal-Hook/blob/main/WRITEUP.md).
 
 ## Introduction
 
